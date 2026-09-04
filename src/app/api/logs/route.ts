@@ -4,6 +4,7 @@ import { getStore } from '@/lib/store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 15;
 
 function positiveInt(value: string | null, fallback: number, max: number): number {
   const parsed = Number(value);

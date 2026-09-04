@@ -91,7 +91,7 @@ export function DashboardView({ demo }: DashboardViewProps) {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-white">Chat Observability</h1>
-            <p className="text-xs text-ink-500">Conversas do portfólio · ingest assíncrono · Loki opcional</p>
+            <p className="text-xs text-ink-500">Conversas do portfólio · ingest assíncrono · Grafana Loki</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
