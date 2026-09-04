@@ -6,11 +6,18 @@ function nanoseconds(iso: string): string {
   return `${safe}000000`;
 }
 
+export function resolveLokiPushUrl(raw: string): string {
+  const trimmed = raw.trim().replace(/\/+$/, '');
+  if (trimmed.endsWith('/loki/api/v1/push')) return trimmed;
+  return `${trimmed}/loki/api/v1/push`;
+}
+
 export async function pushToLoki(event: ConversationEvent): Promise<void> {
-  const url = process.env.LOKI_PUSH_URL;
+  const configuredUrl = process.env.LOKI_PUSH_URL;
   const user = process.env.LOKI_USER;
   const token = process.env.LOKI_TOKEN;
-  if (!url || !user || !token) return;
+  if (!configuredUrl || !user || !token) return;
+  const url = resolveLokiPushUrl(configuredUrl);
 
   const line = JSON.stringify({
     id: event.id,

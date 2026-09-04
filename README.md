@@ -54,17 +54,53 @@ A tabela `conversation_logs` é criada sozinha na primeira escrita. Login do pai
 
 Sem `DATABASE_URL` e fora da Vercel, os eventos vão para `data/conversations.json`.
 
-### Grafana Loki
+### Grafana Cloud + Loki (produção)
 
-Preencha no dashboard:
+Grafana é o painel. Loki é o banco de logs. O app já envia cada conversa no `POST /api/ingest`.
+
+1. Crie um stack gratuito em [grafana.com](https://grafana.com/auth/sign-up/create-user).
+2. No [portal](https://grafana.com/orgs): stack → **Loki** → **Details**.
+   - **URL**: `https://logs-prod-XX.grafana.net` (a região muda por conta)
+   - **User**: número (instance ID)
+3. Crie um token com permissão de escrita:
+   - Portal → **Security** → **Access Policies** → **Create access policy**
+   - Realm: o stack
+   - Scope: `logs:write`
+   - **Add token** e copie o valor (`glc_...`)
+4. Variáveis na Vercel (Production **e** Preview, e **redeploy** depois):
 
 ```
-LOKI_PUSH_URL=https://logs-prod-XXX.grafana.net/loki/api/v1/push
-LOKI_USER=<instance id>
-LOKI_TOKEN=<API key>
+NEXT_PUBLIC_DEMO=false
+INGEST_SECRET=<segredo longo>
+DASHBOARD_PASSWORD=<senha do painel>
+SESSION_SECRET=<chave longa>
+DATABASE_URL=<connection string do Neon, sslmode=require>
+DATABASE_SSL=true
+LOKI_PUSH_URL=https://logs-prod-XX.grafana.net/loki/api/v1/push
+LOKI_USER=<instance id do passo 2>
+LOKI_TOKEN=<glc_...>
+LOKI_ENV=production
 ```
 
-No Grafana Explore: `{app="joshua-chat"}`.
+Pode colar só o host do Loki; o app completa `/loki/api/v1/push`.
+
+5. Confira `GET /api/health`: `demo` false, `postgres` e `loki` true.
+6. No Grafana (Launch) → **Explore** → datasource Loki:
+
+```
+{app="joshua-chat"}
+{app="joshua-chat"} | json
+{app="joshua-chat", has_error="true"}
+```
+
+7. **Dashboards** → **New** → **Import** → arquivo `grafana/joshua-chat.json` deste repo.
+
+No chatbot (Vercel):
+
+```
+LOGS_INGEST_URL=https://<seu-app>.vercel.app/api/ingest
+LOGS_INGEST_SECRET=<o mesmo INGEST_SECRET>
+```
 
 ---
 
@@ -100,7 +136,7 @@ Em demo, recarregar a página volta ao seed (memória). Com Postgres, o evento p
 
 Ou, na pasta do projeto: `npx vercel --prod`.
 
-Para receber logs de verdade: desligue o demo, configure `DATABASE_URL` (Neon) + `INGEST_SECRET` + senha do painel.
+`NEXT_PUBLIC_DEMO` entra no **build**. Depois de mudar para `false`, faça **Redeploy**.
 
 ---
 
