@@ -39,7 +39,7 @@ export function getSessionSecret(): string {
 }
 
 export function getDashboardPassword(): string {
-  return process.env.DASHBOARD_PASSWORD || 'demo';
+  return (process.env.DASHBOARD_PASSWORD || 'demo').trim();
 }
 
 export function getIngestSecret(): string {

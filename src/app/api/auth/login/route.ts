@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const password =
     body && typeof body === 'object' && 'password' in body
-      ? String((body as { password?: unknown }).password || '')
+      ? String((body as { password?: unknown }).password || '').trim()
       : '';
 
   if (password !== getDashboardPassword()) {
