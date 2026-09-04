@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chat-observability-postgres
+    restart: unless-stopped
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: chatobs
+      POSTGRES_PASSWORD: chatobs
+      POSTGRES_DB: chatobs
+    volumes:
+      - chatobs_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatobs -d chatobs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  chatobs_pg_data:
