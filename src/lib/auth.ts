@@ -29,6 +29,8 @@ async function hmacHex(secret: string, payload: string): Promise<string> {
 }
 
 export function isDemoMode(): boolean {
+  if (process.env.DEMO_MODE === 'false') return false;
+  if (process.env.DEMO_MODE === 'true') return true;
   return process.env.NEXT_PUBLIC_DEMO === 'true';
 }
 

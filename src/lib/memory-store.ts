@@ -6,15 +6,19 @@ interface MemoryState {
   events: ConversationEvent[];
 }
 
-const globalStore = globalThis as typeof globalThis & { __obsMemory?: MemoryState };
+const globalStore = globalThis as typeof globalThis & {
+  __obsMemoryDemo?: MemoryState;
+  __obsMemoryLive?: MemoryState;
+};
 
 function state(seeded: boolean): MemoryState {
-  if (!globalStore.__obsMemory) {
-    globalStore.__obsMemory = {
+  const key = seeded ? '__obsMemoryDemo' : '__obsMemoryLive';
+  if (!globalStore[key]) {
+    globalStore[key] = {
       events: seeded ? demoConversations() : [],
     };
   }
-  return globalStore.__obsMemory;
+  return globalStore[key];
 }
 
 export function createMemoryStore(seeded = true): ConversationStore {

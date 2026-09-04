@@ -4,15 +4,19 @@ import { createMemoryStore } from './memory-store';
 import { createPostgresStore } from './postgres-store';
 import type { ConversationStore } from './types';
 
+export type StoreKind = 'demo' | 'postgres' | 'file' | 'memory';
+
+export function getStoreKind(): StoreKind {
+  if (isDemoMode()) return 'demo';
+  if (process.env.DATABASE_URL) return 'postgres';
+  if (!process.env.VERCEL) return 'file';
+  return 'memory';
+}
+
 export function getStore(): ConversationStore {
-  if (isDemoMode()) {
-    return createMemoryStore(true);
-  }
-  if (process.env.DATABASE_URL) {
-    return createPostgresStore();
-  }
-  if (!process.env.VERCEL) {
-    return createFileStore();
-  }
-  return createMemoryStore(true);
+  const kind = getStoreKind();
+  if (kind === 'demo') return createMemoryStore(true);
+  if (kind === 'postgres') return createPostgresStore();
+  if (kind === 'file') return createFileStore();
+  return createMemoryStore(false);
 }
