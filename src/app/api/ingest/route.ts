@@ -7,6 +7,7 @@ import { parseIngestPayload, toConversationEvent } from '@/lib/validate-ingest';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 15;
 
 export async function POST(request: Request) {
   if (!ingestAuthorized(request.headers.get('authorization'))) {
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
 
   const event = toConversationEvent(parsed.value);
   const saved = await getStore().ingest(event);
-  void pushToLoki(saved);
+  const loki = await pushToLoki(saved);
 
-  return NextResponse.json(ok({ id: saved.id }), { status: 201 });
+  return NextResponse.json(ok({ id: saved.id, loki }), { status: 201 });
 }

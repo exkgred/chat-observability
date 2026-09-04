@@ -121,7 +121,7 @@ Teste local do ingest:
 curl -X POST http://localhost:3002/api/ingest \
   -H 'Authorization: Bearer dev-ingest-secret' \
   -H 'Content-Type: application/json' \
-  -d '{"pergunta":"Quais projetos você tem?","resposta":"Smarty Hardware e Kanban.","visitante":"Ana","latenciaMs":1200}'
+  -d '{"pergunta":"Quais projetos você tem?","resposta":"Smarty Hardware, Kanban e Chat Observability.","visitante":"Ana","latenciaMs":1200}'
 ```
 
 Em demo, recarregar a página volta ao seed (memória). Com Postgres, o evento permanece.

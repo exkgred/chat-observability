@@ -13,7 +13,7 @@ export function demoConversations(): ConversationEvent[] {
       visitante: 'Ana',
       pergunta: 'Quais projetos você tem no portfólio?',
       resposta:
-        'Tenho o Smarty Hardware, um e-commerce de peças de PC, e o Kanban Board MVP para times ágeis. Os dois estão no ar com demo na Vercel.',
+        'Tenho o Smarty Hardware, um e-commerce de peças de PC; o Kanban Board MVP para times ágeis; e o Chat Observability, o painel Grafana das conversas deste chat. Os três estão no ar com demo na Vercel.',
       latenciaMs: 1840,
       modelo: 'command-a-03-2025',
       origemHash: 'a1b2c3d4e5f6a7b8',
@@ -211,9 +211,9 @@ export function demoConversations(): ConversationEvent[] {
       occurredAt: hoursAgo(210),
       sessionId: 'sess-anon-3',
       visitante: null,
-      pergunta: 'me fala um pouco de você',
+      pergunta: 'O que é o Chat Observability / Grafana?',
       resposta:
-        'Sou Joshua Silva, engenheiro de software em Curitiba. Trabalho com PHP, Laravel, Vue, Node e NestJS.',
+        'É o painel das conversas deste chatbot. O chat responde na hora e o log segue depois para o dashboard e para o Grafana Cloud Loki. Demo: https://chat-observability.vercel.app/',
       latenciaMs: 1520,
       modelo: 'command-a-03-2025',
       origemHash: '5566778899aabbcc',

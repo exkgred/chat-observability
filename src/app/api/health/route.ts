@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ok } from '@/lib/envelope';
 import { isDemoMode } from '@/lib/auth';
+import { isLokiConfigured } from '@/lib/loki';
 import { getStoreKind } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +13,7 @@ export async function GET() {
       demo: isDemoMode(),
       store: getStoreKind(),
       postgres: Boolean(process.env.DATABASE_URL),
-      loki: Boolean(process.env.LOKI_PUSH_URL),
+      loki: isLokiConfigured(),
     }),
   );
 }
