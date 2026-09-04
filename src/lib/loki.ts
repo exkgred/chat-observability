@@ -1,7 +1,7 @@
 import type { ConversationEvent } from './types';
 
-const PUSH_TIMEOUT_MS = 8000;
-const QUERY_TIMEOUT_MS = 10000;
+const PUSH_TIMEOUT_MS = 4000;
+const QUERY_TIMEOUT_MS = 8000;
 
 export type LokiPushResult =
   | { status: 'skipped'; reason: string }
@@ -216,4 +216,30 @@ export async function queryLokiEvents(days = 14): Promise<ConversationEvent[]> {
     }
   }
   return events.sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt));
+}
+
+export async function probeLoki(): Promise<{
+  configured: boolean;
+  push: LokiPushResult;
+  queried: number;
+}> {
+  if (!isLokiConfigured()) {
+    return { configured: false, push: { status: 'skipped', reason: 'loki env ausente' }, queried: 0 };
+  }
+  const event: ConversationEvent = {
+    id: crypto.randomUUID(),
+    occurredAt: new Date().toISOString(),
+    sessionId: 'health-probe',
+    visitante: 'health',
+    pergunta: 'health-probe',
+    resposta: 'ok',
+    latenciaMs: 1,
+    modelo: null,
+    origemHash: null,
+    erro: null,
+    source: 'health-probe',
+  };
+  const push = await pushToLoki(event);
+  const queried = await queryLokiEvents(1);
+  return { configured: true, push, queried: queried.length };
 }

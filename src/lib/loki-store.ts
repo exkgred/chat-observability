@@ -1,15 +1,25 @@
 import { queryLokiEvents } from './loki';
+import { mergeEvents, recentEvents, rememberEvent } from './recent-events';
 import { applyFilters, computeStats } from './stats';
 import type { ConversationStore, ListFilters } from './types';
+
+async function loadEvents(days: number) {
+  try {
+    return mergeEvents(recentEvents(), await queryLokiEvents(days));
+  } catch (error) {
+    console.error('Loki list error', error);
+    return recentEvents();
+  }
+}
 
 export function createLokiStore(): ConversationStore {
   return {
     async ingest(event) {
+      rememberEvent(event);
       return event;
     },
     async list(filters: ListFilters) {
-      const events = await queryLokiEvents(30);
-      const filtered = applyFilters(events, filters);
+      const filtered = applyFilters(await loadEvents(30), filters);
       const start = (filters.page - 1) * filters.perPage;
       return {
         items: filtered.slice(start, start + filters.perPage),
@@ -17,12 +27,10 @@ export function createLokiStore(): ConversationStore {
       };
     },
     async getById(id) {
-      const events = await queryLokiEvents(30);
-      return events.find((event) => event.id === id) || null;
+      return (await loadEvents(30)).find((event) => event.id === id) || null;
     },
     async stats(days) {
-      const events = await queryLokiEvents(Math.max(days, 14));
-      return computeStats(events, days);
+      return computeStats(await loadEvents(Math.max(days, 14)), days);
     },
   };
 }

@@ -43,14 +43,14 @@ export function getDashboardPassword(): string {
 }
 
 export function getIngestSecret(): string {
-  return (process.env.INGEST_SECRET || '').trim();
+  return (process.env.INGEST_SECRET || '').trim().replace(/^['"]|['"]$/g, '');
 }
 
 function ingestSecretCandidates(): string[] {
   const unique = new Set(
     [
       getIngestSecret(),
-      (process.env.LOGS_INGEST_SECRET || '').trim(),
+      (process.env.LOGS_INGEST_SECRET || '').trim().replace(/^['"]|['"]$/g, ''),
       process.env.VERCEL ? 'dev-ingest-secret' : '',
     ].filter(Boolean),
   );

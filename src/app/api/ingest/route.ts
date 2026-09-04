@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import { fail, ok } from '@/lib/envelope';
 import { ingestAuthorized } from '@/lib/auth';
 import { pushToLoki } from '@/lib/loki';
+import { rememberEvent } from '@/lib/recent-events';
 import { getStore } from '@/lib/store';
 import { parseIngestPayload, toConversationEvent } from '@/lib/validate-ingest';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 15;
+export const maxDuration = 30;
 
 export async function POST(request: Request) {
   if (!ingestAuthorized(request.headers.get('authorization'))) {
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
 
   const event = toConversationEvent(parsed.value);
   const saved = await getStore().ingest(event);
+  rememberEvent(saved);
   const loki = await pushToLoki(saved);
 
   return NextResponse.json(ok({ id: saved.id, loki }), { status: 201 });
