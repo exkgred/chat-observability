@@ -16,6 +16,9 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const page = positiveInt(url.searchParams.get('page'), 1, 1000);
   const perPage = positiveInt(url.searchParams.get('perPage'), 20, 100);
+  const statusParam = url.searchParams.get('status');
+  const status = statusParam === 'ok' || statusParam === 'erro' ? statusParam : undefined;
+
   const result = await getStore().list({
     page,
     perPage,
@@ -23,6 +26,8 @@ export async function GET(request: Request) {
     visitante: url.searchParams.get('visitante') || undefined,
     from: url.searchParams.get('from') || undefined,
     to: url.searchParams.get('to') || undefined,
+    source: url.searchParams.get('source') || undefined,
+    status,
   });
 
   return NextResponse.json(

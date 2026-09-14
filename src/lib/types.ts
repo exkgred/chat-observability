@@ -25,11 +25,15 @@ export interface IngestPayload {
   source?: string;
 }
 
+export type StatusFilter = 'ok' | 'erro';
+
 export interface ListFilters {
   q?: string;
   visitante?: string;
   from?: string;
   to?: string;
+  source?: string;
+  status?: StatusFilter;
   page: number;
   perPage: number;
 }

@@ -71,10 +71,19 @@ export function computeStats(events: ConversationEvent[], days: number, now = ne
 
 export function applyFilters(
   events: ConversationEvent[],
-  filters: { q?: string; visitante?: string; from?: string; to?: string },
+  filters: {
+    q?: string;
+    visitante?: string;
+    from?: string;
+    to?: string;
+    source?: string;
+    status?: 'ok' | 'erro';
+  },
 ): ConversationEvent[] {
   const q = filters.q?.trim().toLowerCase();
   const visitante = filters.visitante?.trim().toLowerCase();
+  const source = filters.source?.trim().toLowerCase();
+  const status = filters.status;
   const from = filters.from ? Date.parse(filters.from) : undefined;
   const to = filters.to ? Date.parse(filters.to) : undefined;
 
@@ -85,6 +94,9 @@ export function applyFilters(
         if (!blob.includes(q)) return false;
       }
       if (visitante && (event.visitante || '').toLowerCase() !== visitante) return false;
+      if (source && event.source.toLowerCase() !== source) return false;
+      if (status === 'ok' && event.erro) return false;
+      if (status === 'erro' && !event.erro) return false;
       const ts = Date.parse(event.occurredAt);
       if (from && !Number.isNaN(from) && ts < from) return false;
       if (to && !Number.isNaN(to) && ts > to) return false;
