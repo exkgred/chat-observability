@@ -8,8 +8,6 @@ export type LokiPushResult =
   | { status: 'ok' }
   | { status: 'error'; reason: string; httpStatus?: number };
 
-type AuthMode = 'basic' | 'bearer-pair' | 'bearer-token';
-
 function env(name: string): string {
   return (process.env[name] || '').trim();
 }
@@ -34,30 +32,29 @@ export function resolveLokiBaseUrl(raw: string): string {
   return resolveLokiPushUrl(raw).replace(/\/loki\/api\/v1\/push$/, '');
 }
 
-function orgIdFromToken(token: string): string | undefined {
-  if (!token.startsWith('glc_')) return undefined;
-  try {
-    const json = Buffer.from(token.slice(4), 'base64').toString('utf8');
-    const parsed = JSON.parse(json) as { o?: string };
-    return typeof parsed.o === 'string' ? parsed.o : undefined;
-  } catch {
-    return undefined;
-  }
+function basicAuthHeaders(user: string, token: string, jsonBody: boolean): HeadersInit {
+  const headers: Record<string, string> = {
+    Authorization: `Basic ${Buffer.from(`${user}:${token}`).toString('base64')}`,
+  };
+  if (jsonBody) headers['Content-Type'] = 'application/json';
+  return headers;
 }
 
-function authHeaders(user: string, token: string, mode: AuthMode, jsonBody: boolean): HeadersInit {
-  const headers: Record<string, string> = {};
-  if (jsonBody) headers['Content-Type'] = 'application/json';
-  if (mode === 'bearer-pair') {
-    headers.Authorization = `Bearer ${user}:${token}`;
-  } else if (mode === 'bearer-token') {
-    headers.Authorization = `Bearer ${token}`;
-    const orgId = orgIdFromToken(token);
-    if (orgId) headers['X-Scope-OrgID'] = orgId;
-  } else {
-    headers.Authorization = `Basic ${Buffer.from(`${user}:${token}`).toString('base64')}`;
-  }
-  return headers;
+export function lokiConnectionHint(): {
+  host: string;
+  userIsNumeric: boolean;
+  userLength: number;
+  tokenKind: 'glc' | 'other' | 'empty';
+} {
+  const host = resolveLokiBaseUrl(env('LOKI_PUSH_URL') || 'https://invalid.example').replace(/^https?:\/\//, '');
+  const user = env('LOKI_USER');
+  const token = env('LOKI_TOKEN');
+  return {
+    host,
+    userIsNumeric: /^\d+$/.test(user),
+    userLength: user.length,
+    tokenKind: token.startsWith('glc_') ? 'glc' : token ? 'other' : 'empty',
+  };
 }
 
 async function requestLoki(
@@ -74,22 +71,6 @@ async function requestLoki(
   } finally {
     clearTimeout(timer);
   }
-}
-
-async function withAuthModes(
-  user: string,
-  token: string,
-  jsonBody: boolean,
-  run: (headers: HeadersInit) => Promise<{ ok: boolean; status: number; text: string }>,
-): Promise<{ ok: boolean; status: number; text: string }> {
-  const modes: AuthMode[] = ['basic', 'bearer-pair', 'bearer-token'];
-  let last = { ok: false, status: 0, text: '' };
-  for (const mode of modes) {
-    last = await run(authHeaders(user, token, mode, jsonBody));
-    if (last.ok) return last;
-    if (last.status !== 401 && last.status !== 403) return last;
-  }
-  return last;
 }
 
 function lokiStreamPayload(event: ConversationEvent): string {
@@ -132,8 +113,10 @@ export async function pushToLoki(event: ConversationEvent): Promise<LokiPushResu
   const payload = lokiStreamPayload(event);
 
   try {
-    const result = await withAuthModes(user, token, true, (headers) =>
-      requestLoki(url, { method: 'POST', headers, body: payload }, PUSH_TIMEOUT_MS),
+    const result = await requestLoki(
+      url,
+      { method: 'POST', headers: basicAuthHeaders(user, token, true), body: payload },
+      PUSH_TIMEOUT_MS,
     );
     if (!result.ok) {
       const snippet = result.text.slice(0, 300);
@@ -190,8 +173,10 @@ export async function queryLokiEvents(days = 14): Promise<ConversationEvent[]> {
   });
   const url = `${resolveLokiBaseUrl(configuredUrl)}/loki/api/v1/query_range?${params.toString()}`;
 
-  const result = await withAuthModes(user, token, false, (headers) =>
-    requestLoki(url, { method: 'GET', headers }, QUERY_TIMEOUT_MS),
+  const result = await requestLoki(
+    url,
+    { method: 'GET', headers: basicAuthHeaders(user, token, false) },
+    QUERY_TIMEOUT_MS,
   );
   if (!result.ok) {
     console.error('Loki query failed', result.status, result.text.slice(0, 300));
@@ -220,11 +205,18 @@ export async function queryLokiEvents(days = 14): Promise<ConversationEvent[]> {
 
 export async function probeLoki(): Promise<{
   configured: boolean;
+  connection: ReturnType<typeof lokiConnectionHint>;
   push: LokiPushResult;
   queried: number;
 }> {
+  const connection = lokiConnectionHint();
   if (!isLokiConfigured()) {
-    return { configured: false, push: { status: 'skipped', reason: 'loki env ausente' }, queried: 0 };
+    return {
+      configured: false,
+      connection,
+      push: { status: 'skipped', reason: 'loki env ausente' },
+      queried: 0,
+    };
   }
   const event: ConversationEvent = {
     id: crypto.randomUUID(),
@@ -241,5 +233,5 @@ export async function probeLoki(): Promise<{
   };
   const push = await pushToLoki(event);
   const queried = await queryLokiEvents(1);
-  return { configured: true, push, queried: queried.length };
+  return { configured: true, connection, push, queried: queried.length };
 }
