@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BrandMark } from '@/components/brand-mark';
 
 export function LoginForm() {
   const router = useRouter();
@@ -38,14 +39,9 @@ export function LoginForm() {
         onSubmit={(event) => void onSubmit(event)}
         className="w-full max-w-sm rounded-3xl border border-white/10 bg-ink-800 p-8 shadow-glow"
       >
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-blue to-accent-violet text-sm font-bold text-white">
-            JS
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-white">Chat Observability</h1>
-            <p className="text-xs text-ink-500">Acesso ao painel de conversas</p>
-          </div>
+        <div className="mb-6">
+          <BrandMark size={36} className="text-white" />
+          <p className="mt-1 text-xs text-ink-500">Acesso ao painel de conversas</p>
         </div>
         <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-ink-500">
           Senha

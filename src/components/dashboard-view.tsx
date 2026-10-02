@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { BrandMark } from '@/components/brand-mark';
 import { ConversationDrawer } from '@/components/conversation-drawer';
 import { ConversationTable } from '@/components/conversation-table';
 import {
@@ -125,14 +126,9 @@ export function DashboardView({ demo }: DashboardViewProps) {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(79,142,247,0.16),_transparent_42%),#0b0e14] px-4 py-6 sm:px-8">
       <header className="mx-auto mb-8 flex max-w-6xl flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-blue to-accent-violet text-sm font-bold text-white">
-            JS
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-white">Chat Observability</h1>
-            <p className="text-xs text-ink-500">Conversas do portfólio · ingest assíncrono · Grafana Loki</p>
-          </div>
+        <div>
+          <BrandMark size={36} className="text-white" />
+          <p className="mt-1 text-xs text-ink-500">Conversas do portfólio · ingest assíncrono · Grafana Loki</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-ink-500">{formatUpdatedAt(updatedAt)}</span>
