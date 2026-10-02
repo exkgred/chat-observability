@@ -7,7 +7,14 @@ interface BrandMarkProps {
 export function BrandMark({ size = 32, className, wordmark = true }: BrandMarkProps) {
   return (
     <span className={['inline-flex items-center gap-2 font-semibold tracking-tight', className].filter(Boolean).join(' ')}>
-      <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        aria-hidden="true"
+        className="shrink-0"
+        style={{ width: size, height: size }}
+      >
         <defs>
           <linearGradient id="obs-mark" x1="6" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
             <stop stopColor="#4f8ef7" />
