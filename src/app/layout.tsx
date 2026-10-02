@@ -10,6 +10,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Chat Observability — Joshua Silva',
   description: 'Painel de conversas do chatbot do portfólio, com ingest assíncrono e Grafana/Loki opcional.',
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+  },
 };
 
 export default function RootLayout({
